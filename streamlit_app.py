@@ -1,5 +1,5 @@
 import streamlit as st
-import openai
+from openai import OpenAI
 from pathlib import Path
 
 """
@@ -10,20 +10,12 @@ It can read architectural plans and relay information or just give general tips 
 
 
 # Configuration
-openai.api_key = st.secrets.api_key()
-assistant_id = st.secrets.ass_id()
-client = None
+openaikey = "sk-streamlitfrontend-OBWaH004XTdzoSuZtl6KT3BlbkFJ2ks5hAgn12iuLnUOgxBl"
+assistant_id = "asst_RNSt9CLC6nVtDmMa7iDbVKxf"
 
-try:
-    client = openai.Client()
-except openai.APIError as e:
-    st.error(f"OpenAI API Error: {e}")
-except openai.APIConnectionError as e:
-    st.error(f"Connection Error: {e}")
-except openai.APIStatusError as e:
-    st.error(f"Status Error: {e.status_code} - {e.response}")
-except Exception as e:
-    st.error(f"General Error: {e}")
+client = OpenAI(
+   api_key=openaikey,
+)
 
 # Function to interact with OpenAI Assistant and handle file uploads
 def get_assistant_response(assistant_id, input_text, attached_files):
