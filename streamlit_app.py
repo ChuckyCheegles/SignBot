@@ -10,9 +10,10 @@ It can read architectural plans and relay information or just give general tips 
 """
 
 
-# Configuration - replace "YOUR_API_KEY" with your actual OpenAI API key.
+# Configuration
 openai.api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("OPENAI_ASSISTANT_ID")
+client = openai.OpenAI()
 
 # Function to interact with OpenAI Assistant and handle file uploads
 def get_assistant_response(assistant_id, input_text, attached_files):
@@ -34,7 +35,7 @@ def get_assistant_response(assistant_id, input_text, attached_files):
     ]
 
     # Create and poll run
-    run = openai.client.beta.threads.runs.create_and_poll(
+    run = client.beta.threads.runs.create_and_poll(
         thread_id="thread_id_placeholder",
         assistant_id=assistant_id,
         messages=messages,
