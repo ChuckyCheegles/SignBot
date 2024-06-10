@@ -1,40 +1,65 @@
-import altair as alt
-import numpy as np
-import pandas as pd
 import streamlit as st
+import openai
+import os
+from pathlib import Path
 
 """
-# Welcome to Streamlit!
-
-Edit `/streamlit_app.py` to customize this app to your heart's desire :heart:.
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-
-In the meantime, below is an example of what you can do with just a few lines of code:
+# Welcome to SignBot!
+SignBot is an AI tool designed to help sign manufacturers plan, design, and fabricate signage!
+It can read architectural plans and relay information or just give general tips on any question you can ask!
 """
 
-num_points = st.slider("Number of points in spiral", 1, 10000, 1100)
-num_turns = st.slider("Number of turns in spiral", 1, 300, 31)
 
-indices = np.linspace(0, 1, num_points)
-theta = 2 * np.pi * num_turns * indices
-radius = indices
+# Configuration - replace "YOUR_API_KEY" with your actual OpenAI API key.
+openai.api_key = os.getenv("OPENAI_API_KEY")
+assistant_id = os.getenv("OPENAI_ASSISTANT_ID")
 
-x = radius * np.cos(theta)
-y = radius * np.sin(theta)
+# Function to interact with OpenAI Assistant and handle file uploads
+def get_assistant_response(assistant_id, input_text, attached_files):
+    # Prepare file attachments
+    files = []
+    for uploaded_file in attached_files:
+        files.append(uploaded_file)
 
-df = pd.DataFrame({
-    "x": x,
-    "y": y,
-    "idx": indices,
-    "rand": np.random.randn(num_points),
-})
+    # Upload files if there are any
+    if files:
+        batch = openai.file.create(file=files)
+        file_ids = [file['id'] for file in batch['data']]
+    else:
+        file_ids = None
 
-st.altair_chart(alt.Chart(df, height=700, width=700)
-    .mark_point(filled=True)
-    .encode(
-        x=alt.X("x", axis=None),
-        y=alt.Y("y", axis=None),
-        color=alt.Color("idx", legend=None, scale=alt.Scale()),
-        size=alt.Size("rand", legend=None, scale=alt.Scale(range=[1, 150])),
-    ))
+    # Prepare messages
+    messages = [
+        {"role": "user", "content": input_text}
+    ]
+
+    # Create and poll run
+    run = openai.client.beta.threads.runs.create_and_poll(
+        thread_id="thread_id_placeholder",
+        assistant_id=assistant_id,
+        messages=messages,
+        files=file_ids
+    )
+
+    return run
+
+def main():
+    st.title("OpenAI Assistant")
+
+    st.header("Upload Files")
+    uploaded_files = st.file_uploader("Upload files for the assistant to analyze", accept_multiple_files=True)
+
+    st.header("Enter Your Query")
+    user_input = st.text_area("Type your query here")
+
+    if st.button("Get Response"):
+        if user_input:
+            with st.spinner('Waiting for response from assistant...'):
+                response = get_assistant_response(assistant_id, user_input, uploaded_files)
+                st.success("Response received!")
+                st.write(response)
+        else:
+            st.error("Please provide a query.")
+
+if __name__ == "__main__":
+    main()
