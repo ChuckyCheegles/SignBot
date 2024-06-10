@@ -11,8 +11,8 @@ It can read architectural plans and relay information or just give general tips 
 
 
 # Configuration
-openai.api_key = os.getenv("OPENAI_API_KEY")
-assistant_id = os.getenv("OPENAI_ASSISTANT_ID")
+openai.api_key = st.secrets.api_key()
+assistant_id = st.secrets.ass_id()
 client = None
 
 try:
