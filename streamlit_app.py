@@ -1,73 +1,33 @@
-import streamlit as st
 from openai import OpenAI
-from pathlib import Path
+import streamlit as st
 
-"""
-# Welcome to SignBot!
-SignBot is an AI tool designed to help sign manufacturers plan, design, and fabricate signage!
-It can read architectural plans and relay information or just give general tips on any question you can ask!
-"""
+st.title("SignBot")
 
+client = OpenAI(api_key="sk-streamlitfrontend-OBWaH004XTdzoSuZtl6KT3BlbkFJ2ks5hAgn12iuLnUOgxBl")
 
-# Configuration
-openaikey = "sk-streamlitfrontend-OBWaH004XTdzoSuZtl6KT3BlbkFJ2ks5hAgn12iuLnUOgxBl"
-assistant_id = "asst_RNSt9CLC6nVtDmMa7iDbVKxf"
+if "openai_model" not in st.session_state:
+    st.session_state["openai_model"] = "gpt-4o"
 
-client = OpenAI(
-   api_key=openaikey,
-)
+if "messages" not in st.session_state:
+    st.session_state.messages = []
 
-# Function to interact with OpenAI Assistant and handle file uploads
-def get_assistant_response(assistant_id, input_text, attached_files):
-    if client is None:
-        raise ValueError("OpenAI client is not initialized.")
-    # Prepare file attachments
-    files = []
-    for uploaded_file in attached_files:
-        files.append(uploaded_file)
+for message in st.session_state.messages:
+    with st.chat_message(message["role"]):
+        st.markdown(message["content"])
 
-    # Upload files if there are any
-    if files:
-        batch = openai.file.create(file=files)
-        file_ids = [file['id'] for file in batch['data']]
-    else:
-        file_ids = None
+if prompt := st.chat_input("Ask SignBot a question!"):
+    st.session_state.messages.append({"role": "user", "content": prompt})
+    with st.chat_message("user"):
+        st.markdown(prompt)
 
-    # Prepare messages
-    messages = [
-        {"role": "user", "content": input_text}
-    ]
-
-    # Create and poll run
-    run = client.beta.threads.runs.create_and_poll(
-        thread_id="thread_id_placeholder",
-        assistant_id=assistant_id,
-        messages=messages,
-        files=file_ids
-    )
-
-    return run
-
-def main():
-    st.title("OpenAI Assistant")
-
-    st.header("Upload Files")
-    uploaded_files = st.file_uploader("Upload files for the assistant to analyze", accept_multiple_files=True)
-
-    st.header("Enter Your Query")
-    user_input = st.text_area("Type your query here")
-
-    if st.button("Get Response"):
-        if user_input:
-            try:
-                with st.spinner('Waiting for response from assistant...'):
-                    response = get_assistant_response(assistant_id, user_input, uploaded_files)
-                    st.success("Response received!")
-                    st.write(response)
-            except Exception as e:
-                st.error(f"Error: {e}")
-        else:
-            st.error("Please provide a query.")
-
-if __name__ == "__main__":
-    main()
+    with st.chat_message("assistant"):
+        stream = client.chat.completions.create(
+            model=st.session_state["openai_model"],
+            messages=[
+                {"role": m["role"], "content": m["content"]}
+                for m in st.session_state.messages
+            ],
+            stream=True,
+        )
+        response = st.write_stream(stream)
+    st.session_state.messages.append({"role": "assistant", "content": response})
