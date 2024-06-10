@@ -13,10 +13,23 @@ It can read architectural plans and relay information or just give general tips 
 # Configuration
 openai.api_key = os.getenv("OPENAI_API_KEY")
 assistant_id = os.getenv("OPENAI_ASSISTANT_ID")
-client = openai.OpenAI()
+client = None
+
+try:
+    client = openai.Client()
+except openai.APIError as e:
+    st.error(f"OpenAI API Error: {e}")
+except openai.APIConnectionError as e:
+    st.error(f"Connection Error: {e}")
+except openai.APIStatusError as e:
+    st.error(f"Status Error: {e.status_code} - {e.response}")
+except Exception as e:
+    st.error(f"General Error: {e}")
 
 # Function to interact with OpenAI Assistant and handle file uploads
 def get_assistant_response(assistant_id, input_text, attached_files):
+    if client is None:
+        raise ValueError("OpenAI client is not initialized.")
     # Prepare file attachments
     files = []
     for uploaded_file in attached_files:
@@ -55,10 +68,13 @@ def main():
 
     if st.button("Get Response"):
         if user_input:
-            with st.spinner('Waiting for response from assistant...'):
-                response = get_assistant_response(assistant_id, user_input, uploaded_files)
-                st.success("Response received!")
-                st.write(response)
+            try:
+                with st.spinner('Waiting for response from assistant...'):
+                    response = get_assistant_response(assistant_id, user_input, uploaded_files)
+                    st.success("Response received!")
+                    st.write(response)
+            except Exception as e:
+                st.error(f"Error: {e}")
         else:
             st.error("Please provide a query.")
 
