@@ -48,7 +48,7 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
             print(f"Failed to create thread: {e}")
             st.stop()
 
-    with st.chat_message("user", avatar="😄"):
+    with st.chat_message("user", avatar=":material/person:"):
         st.markdown(user_query)
 
     st.session_state.chat_history.append({"role": "user", "content": user_query})
@@ -64,7 +64,7 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
         print(f"Failed to attach message to thread: {e}")
         st.stop()
 
-    with st.chat_message("assistant", avatar="🤖"):
+    with st.chat_message("SignBot", avatar=":material/terminal:"):
         try:
             stream = client.beta.threads.runs.create(
                 thread_id=st.session_state.thread_id,
