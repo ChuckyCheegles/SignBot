@@ -6,6 +6,16 @@ from openai.types.beta.threads.text_delta_block import TextDeltaBlock
 OPENAI_API_KEY = "sk-streamlitfrontend-OBWaH004XTdzoSuZtl6KT3BlbkFJ2ks5hAgn12iuLnUOgxBl"
 ASSISTANT_ID = "asst_RNSt9CLC6nVtDmMa7iDbVKxf"
 
+allowed_files = {
+    "pdf",
+    "docx",
+    "doc",
+    "txt",
+    "png"
+}
+
+file_uploader = st.file_uploader("Upload a File!", type=allowed_files, accept_multiple_files=True, label_visibility="collapsed", )
+
 # Initialise the OpenAI client, and retrieve the assistant
 client = OpenAI(api_key=OPENAI_API_KEY)
 try:
@@ -82,3 +92,4 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
             print(f"Error during streaming: {e}")
 
         st.session_state.chat_history.append({"role": "assistant", "content": assistant_reply})
+
