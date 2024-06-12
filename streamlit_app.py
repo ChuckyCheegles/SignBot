@@ -34,7 +34,7 @@ def update_key():
     st.session_state.uploader_key += 1
 
 # Title
-st.title("SignBot - Testing Platform")
+st.title("SignBot")
 st.markdown(":red-background[SignBot is an experimental program. Responses may not be accurate. Try asking SignBot to verify it's results.]")
 
 # Display messages in chat history
@@ -50,7 +50,7 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
         try:
             thread = client.beta.threads.create()
             st.session_state.thread_id = thread.id
-            print(thread.id)
+            print(f"Created New Thread with ID: {thread.id}")
         except Exception as e:
             st.error(f"Failed to create thread: {e}")
             print(f"Failed to create thread: {e}")
@@ -78,24 +78,31 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
                 name=f"Vector Store for Thread ID: {st.session_state.thread_id}",
                 file_ids=files_array,  # Passing simple list
                 expires_after={
-                    "days":{1}
+                    "anchor": "last_active_at",
+                    "days": 1
                 },
             )
 
             if "vector_store_id" not in st.session_state:
-               st.session_state.vector_store_id= [vector_store.id]
+               st.session_state.vector_store_id = [vector_store.id]
 
             print(f"Vector Store Created Successfully with ID: {st.session_state.vector_store_id}")
 
             # Get Vector Store ID and Attach it to current Thread ID
-            client.beta.threads.update(
-                st.session_state.thread_id,
-                tool_resources={
-                    "file_search": {
-                        "vector_store_ids": [vector_store.id],  # Ensure this is also a list
-                    }
-                }
-            )
+            try:
+                client.beta.threads.update(
+                    st.session_state.thread_id,
+                    tool_resources={
+                        "file_search": {
+                            "vector_store_ids": [vector_store.id], 
+                        }
+                  }
+                )
+            except Exception as e:
+                print(f"Vector Store Failed to Attach to Thread ID: {st.session_state.thread_id} for reason: {e}")
+                st.error(f"Vector Store Failed to Attach to Thread ID: {st.session_state.thread_id} for reason: {e}")
+                st.error("SignBot will continue to answer queries but it's responses may be unreliable. Try starting a new thread!")
+
             print(f"Vector Store Attached Successfully to Thread ID: {st.session_state.thread_id}")
             update_key()
         else:
@@ -108,9 +115,9 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
 
     try:
         client.beta.threads.messages.create(
-            thread_id=st.session_state.thread_id,
-            role="user",
-            content=user_query
+        thread_id=st.session_state.thread_id,
+        role="user",
+        content=user_query
         )
         print(f"Message attached to thread ID: {st.session_state.thread_id}")
     except Exception as e:
@@ -147,6 +154,6 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
             st.error(f"Error during streaming: {e}")
             print(f"Error during streaming: {e}")
         
-        st.session_state.chat_history.append({"role": "assistant", "content": assistant_reply})
+        st.session_state.chat_history.append({"role": "SignBot", "content": assistant_reply})
 
 
