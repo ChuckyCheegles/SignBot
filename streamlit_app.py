@@ -61,36 +61,42 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
 
     st.session_state.chat_history.append({"role": "user", "content": user_query})
 
-    #Upload file to Assistant
+    # Upload file to Assistant
     try:
         if file_uploader is not None:
-            #Upload File
+            # Upload File
             file = client.files.create(
                 file=file_uploader,
                 purpose='assistants'
             )
-            #Create array to store file IDs
-            files_array = {
-                f"{file.id}",
-            }
-            print(f"File Uploaded to OpenAI Assistant Succesfully with ID:{file.id}")            
-            #Create Vector Store and attach File ID
+            # Create array to store file IDs
+            files_array = [f"{file.id}"]  # This should be a simple list of strings
+            print(f"File Uploaded to OpenAI Assistant Successfully with ID: {file.id}")            
+
+            # Create Vector Store and attach File ID
             vector_store = client.beta.vector_stores.create(
                 name=f"Vector Store for Thread ID: {st.session_state.thread_id}",
-                file_ids=[files_array]
+                file_ids=files_array,  # Passing simple list
+                expires_after={
+                    "days":{1}
+                },
             )
-            print(f"Vector Store Created Succesfully with ID:{vector_store.id}")
 
-            #Get Vector Store ID and Attach it to current Thread ID
+            if "vector_store_id" not in st.session_state:
+               st.session_state.vector_store_id= [vector_store.id]
+
+            print(f"Vector Store Created Successfully with ID: {st.session_state.vector_store_id}")
+
+            # Get Vector Store ID and Attach it to current Thread ID
             client.beta.threads.update(
                 st.session_state.thread_id,
                 tool_resources={
                     "file_search": {
-                        "vector_store_ids": vector_store.id,
+                        "vector_store_ids": [vector_store.id],  # Ensure this is also a list
                     }
                 }
             )
-            print(f"Vector Store Attached Succesfully to Thread ID:{st.session_state.thread_id}")
+            print(f"Vector Store Attached Successfully to Thread ID: {st.session_state.thread_id}")
             update_key()
         else:
             print("No File Loaded")
