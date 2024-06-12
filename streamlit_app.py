@@ -3,8 +3,8 @@ from openai import OpenAI
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
 
-OPENAI_API_KEY = st.secrets("OPENAI_API_KEY")
-ASSISTANT_ID = st.secrets("ASSISTANT_ID")
+OPENAI_API_KEY = "sk-streamlitpublic-rde5h7hYgfKhn0QLtJuVT3BlbkFJWIOHwunENZVL757JBveA"
+ASSISTANT_ID = "asst_RNSt9CLC6nVtDmMa7iDbVKxf"
 
 allowed_files = {
     "pdf",
