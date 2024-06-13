@@ -35,7 +35,7 @@ def update_key():
 
 # Title
 st.title("SignBot")
-st.header("SignBot is an experimental program. Responses may not be accurate. Try asking SignBot to verify it's results.")
+st.markdown(:blue-background["SignBot is an experimental program. Responses may not be accurate. Try asking SignBot to verify it's results.]")
 file_uploader = st.file_uploader("Upload a File!", type=allowed_files, accept_multiple_files=False, label_visibility="collapsed", key=f"uploader_{st.session_state.uploader_key}")
 st.divider()
 # Display messages in chat history
