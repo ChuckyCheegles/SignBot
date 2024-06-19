@@ -73,9 +73,6 @@ def get_longitude(): # Gets the user's current longitude
         print("Could not determine the longitude.")
         return "Could not determine the longitude."
 
-    dev_info = f"Architecture:{platform.machine()} - OS:{platform.system()}"
-    return dev_info
-
 def get_current_time(): # Gets the current time
     return datetime.now().isoformat()
 
