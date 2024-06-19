@@ -35,8 +35,7 @@ def update_key():
     st.session_state.uploader_key += 1
 
 #EventHandler class
-class EventHandler(AssistantEventHandler): 
-  @override
+class EventHandler(AssistantEventHandler):
   def on_text_delta(self, delta, snapshot):
     print(delta.value, end="", flush=True)
       
