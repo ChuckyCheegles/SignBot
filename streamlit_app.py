@@ -2,7 +2,6 @@ import streamlit as st
 from openai import OpenAI
 from openai.types.beta.assistant_stream_event import ThreadMessageDelta
 from openai.types.beta.threads.text_delta_block import TextDeltaBlock
-from openai import AssistantEventHandler
 
 OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 ASSISTANT_ID = st.secrets["ASSISTANT_ID"]
@@ -35,7 +34,8 @@ def update_key():
     st.session_state.uploader_key += 1
 
 #EventHandler class
-class EventHandler(AssistantEventHandler):
+class EventHandler(AssistantEventHandler): 
+  @override
   def on_text_delta(self, delta, snapshot):
     print(delta.value, end="", flush=True)
       
@@ -210,7 +210,6 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
         st.stop()
 
     with st.chat_message("SignBot", avatar=":material/terminal:"):
-        event_handler = EventHandler()
         try:
             stream = client.beta.threads.runs.create(
                 thread_id=st.session_state.thread_id,
@@ -229,14 +228,12 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
         assistant_reply = ""
 
         try:
-            with client.beta.threads.runs.stream(
-                    thread_id=thread.id,
-                    assistant_id=assistant.id,
-                    event_handler=event_handler
-            ) as stream:
-                stream.until_done()
-                print("")
-                
+            for event in stream:
+                if isinstance(event, ThreadMessageDelta):
+                    if isinstance(event.data.delta.content[0], TextDeltaBlock):
+                        assistant_reply_box.empty()
+                        assistant_reply += event.data.delta.content[0].text.value
+                        assistant_reply_box.markdown(assistant_reply)
         except Exception as e:
             st.error(f"Error during streaming: {e}")
             print(f"Error during streaming: {e}")
