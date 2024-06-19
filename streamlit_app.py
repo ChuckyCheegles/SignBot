@@ -215,7 +215,6 @@ if user_query := st.chat_input("Ask SignBot A Question!"):
             stream = client.beta.threads.runs.create(
                 thread_id=st.session_state.thread_id,
                 assistant_id=ASSISTANT_ID,
-                event_handler=event_handler,
                 stream=True
             )
             print(f"Message received with thread ID: {st.session_state.thread_id}")
