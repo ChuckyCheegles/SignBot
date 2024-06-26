@@ -36,13 +36,12 @@ def update_key():
 # Title
 st.title("SignBot")
 st.markdown(":purple-background[SignBot is an experimental program. Responses may not be accurate. Try asking SignBot to verify it's results.]")
-file_uploader = st.file_uploader("Upload a File!", type=allowed_files, accept_multiple_files=False, label_visibility="collapsed", key=f"uploader_{st.session_state.uploader_key}")
 st.divider()
 # Display messages in chat history
 for message in st.session_state.chat_history:
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
-
+file_uploader = st.file_uploader("Upload a File!", type=allowed_files, accept_multiple_files=False, label_visibility="collapsed", key=f"uploader_{st.session_state.uploader_key}")
 # Textbox and streaming process
 
 if user_query := st.chat_input("Ask SignBot A Question!"):
